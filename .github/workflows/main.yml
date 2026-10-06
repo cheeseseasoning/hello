@@ -25,3 +25,22 @@ jobs:
 
     - name: 메이븐 빌드
       run: mvn clean package
+      
+    - name: 보안 환경변수를 이용하여 개인키 파일 생성
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+    
+    - name: actions를 사용하여 보안 환경변수를 이용하여 개인키 파일 생성
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
+        
+    - name: 서버 연결 시 지문 등록
+      run: ssh-keyscan -t ed25519 3.106.140.142 >> ~/.ssh/known_hosts
+
+    - name: 개인키 파일 확인
+      run: |
+        cat ~/.ssh/id_rsa
+        cat ~/.ssh/known_hosts
